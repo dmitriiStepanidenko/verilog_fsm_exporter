@@ -5,7 +5,7 @@
 
 Пример ([Источник](https://verilogguide.readthedocs.io/en/latest/verilog/fsm.html))
 
-![alt text](imgs/MooreEdgeDetector.jpg"FSM")
+![alt text](imgs/MooreEdgeDetector.jpg)
 
 Пользователю необходимо каким-то образом задать данный конечный автомат и после этого выполнить программу.
 
