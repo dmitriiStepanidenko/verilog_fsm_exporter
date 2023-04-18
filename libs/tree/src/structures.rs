@@ -7,7 +7,7 @@ pub trait ExportVerilog {
 /// net_type ::=
 /// supply0 | supply1 | tri | triand | trior | tri0 | tri1 | wire | wand | wor
 /// Right now support only wire
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum NetType {
     // Supply0,
     // Supply1,
@@ -21,7 +21,7 @@ pub enum NetType {
     // Wor,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Statement {
     Wire(Wire),
     Register(Register),
@@ -30,6 +30,7 @@ pub enum Statement {
     LocalParam(LocalParam),
     If(If),
     Case(Case),
+    Assignment(Assignment),
 }
 
 pub fn statement_export_verilog(stmt: &Statement) -> String {
@@ -41,42 +42,45 @@ pub fn statement_export_verilog(stmt: &Statement) -> String {
         Statement::LocalParam(param) => param.export_verilog(),
         Statement::If(x) => x.export_verilog(),
         Statement::Case(x) => x.export_verilog(),
+        Statement::Assignment(x) => x.export_verilog(),
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 /// TODO: Заменить строку на ссылку
+/// Разница между Assignment в том, что это чисто под операции, начинающиеся на assign
 pub struct Assign {
     pub left: String,
     pub right: Expression,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Always {
     pub statements: Vec<Statement>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 /// TODO: Заменить строку на ссылку
 pub enum Expression {
     Identifier(String),
     Unary(UnaryOp, Box<Expression>),
     Binary(Box<Expression>, BinaryOp, Box<Expression>),
+    Number(Number),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum UnaryOp {
     Not,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BinaryOp {
     And,
     Or,
     Eq,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Port {
     Input(Input),
     Output(Output),
@@ -87,22 +91,22 @@ trait PortTrait {
     fn what_type(&self) -> String;
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct If {
     pub condition: Expression,
     pub then_statements: Vec<Statement>,
     pub else_statements: Vec<Statement>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Case {
     pub expression: Expression,
-    pub items: Vec<(Option<String>, Expression)>,
+    pub items: Vec<(Option<String>, Statement)>,
 }
 
 /// input_declaration ::=
 /// input ( net_type )? ( signed )? ( range )? list_of_port_identifiers
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Input {
     pub name: String,
     pub net_type: Option<NetType>,
@@ -112,12 +116,18 @@ pub struct Input {
 
 /// inout_declaration ::=
 /// inout ( <net_type> )? ( signed )? ( <range> )? <list_of_port_identifiers>
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Inout {
     pub name: String,
     pub net_type: Option<NetType>,
     pub width: Option<u32>,
     pub is_signed: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum RegNetType {
+    NetType(NetType),
+    Reg(bool),
 }
 
 /// output_declaration ::=
@@ -130,39 +140,48 @@ pub struct Inout {
 /// output ( output_variable_type )? list_of_port_identifiers
 /// |
 /// output output_variable_type list_of_variable_port_identifiers
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Output {
     pub name: String,
-    pub net_type: Option<NetType>,
+    pub reg_net_type: Option<RegNetType>,
     pub width: Option<u32>,
     pub is_signed: bool,
 }
 
-#[derive(Clone, Debug)]
-pub struct Assignment {
-    pub name: String,
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum OperationType {
+    Sync,  // <=
+    Async, // =
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Assignment {
+    pub name: String,
+    pub ass_type: OperationType,
+    pub right: Expression,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Module {
     pub name: String,
     pub statements: Vec<Statement>,
     pub ports: Vec<Port>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 /// TODO: заменить на NetType. Wire-это частное
 pub struct Wire {
     pub name: String,
     pub width: u32,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Register {
     pub name: String,
     pub width: u32,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LocalParam {
     pub name: String,
     pub value: Number,
@@ -177,7 +196,7 @@ pub struct LocalParam {
 // | hex_number
 // | real_number real_number
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 /// TODO: real_number
 pub enum Number {
     Binary(u32, String),

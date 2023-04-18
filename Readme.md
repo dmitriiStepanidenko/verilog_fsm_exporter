@@ -1,5 +1,7 @@
 # Библиотека для кодогенерации кода Verilog и FSM
 
+[Доки](https://dmitriistepanidenko.github.io/verilog_fsm_exporter/libs/tree/doc/tree/index.html)
+
 ## Проблема
 Нужен удобный инструмент, генерирующий из абстрактного описания FSM (Finite State Machine aka конечный автомат) готовый Verilog код. 
 

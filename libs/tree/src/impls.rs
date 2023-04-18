@@ -66,10 +66,15 @@ impl Inout {
 }
 
 impl Output {
-    pub fn new(name: &str, net_type: Option<NetType>, width: Option<u32>, is_signed: bool) -> Self {
+    pub fn new(
+        name: &str,
+        reg_net_type: Option<RegNetType>,
+        width: Option<u32>,
+        is_signed: bool,
+    ) -> Self {
         Output {
             name: name.to_string(),
-            net_type,
+            reg_net_type,
             width,
             is_signed,
         }

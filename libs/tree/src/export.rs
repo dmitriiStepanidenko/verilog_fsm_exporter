@@ -60,6 +60,36 @@ impl CommonPortDeclarations {
     }
 }
 
+struct OutputPortDeclarations {}
+
+impl OutputPortDeclarations {
+    fn export_verilog(
+        direction: &str,
+        name: &String,
+        net_type: &Option<RegNetType>,
+        width: &Option<u32>,
+        is_signed: &bool,
+    ) -> String {
+        let net_type_string = match net_type {
+            Some(x) => match x {
+                RegNetType::Reg(_b) => {
+                    format!("reg ")
+                }
+                RegNetType::NetType(x) => {
+                    format!("{} ", x.to_string())
+                }
+            },
+            None => String::new(),
+        };
+        let width_str = match width {
+            Some(width) => format!("[{}:0] ", width - 1),
+            None => String::new(),
+        };
+        let signed_str = if *is_signed { "signed " } else { "" };
+        format!("{direction} {net_type_string}{signed_str}{width_str}{name}")
+    }
+}
+
 impl ExportVerilog for Inout {
     /// inout_declaration ::=
     /// inout ( <net_type> )? ( signed )? ( <range> )? <list_of_port_identifiers>
@@ -92,10 +122,10 @@ impl ExportVerilog for Output {
     /// output_declaration ::=
     /// output ( net_type )? ( signed )? ( range )? list_of_port_identifiers
     fn export_verilog(&self) -> String {
-        CommonPortDeclarations::export_verilog(
+        OutputPortDeclarations::export_verilog(
             "output",
             &self.name,
-            &self.net_type,
+            &self.reg_net_type,
             &self.width,
             &self.is_signed,
         )
@@ -178,6 +208,18 @@ impl ExportVerilog for Expression {
                     rhs.export_verilog()
                 )
             }
+            Expression::Number(num) => num.export_verilog(),
+        }
+    }
+}
+
+impl ExportVerilog for Number {
+    fn export_verilog(&self) -> String {
+        match self {
+            Number::Binary(_i, str) => str.clone(),
+            Number::Octal(_i, str) => str.clone(),
+            Number::Decimal(_i, str) => str.clone(),
+            Number::Hex(_i, str) => str.clone(),
         }
     }
 }
@@ -233,6 +275,22 @@ impl ExportVerilog for If {
         s
     }
 }
+/// Пример:
+/// ```verilog
+/// state <= S1;
+/// ```
+impl ExportVerilog for Assignment {
+    fn export_verilog(&self) -> String {
+        let mut s = format!("{} ", self.name);
+        s += if self.ass_type == OperationType::Sync {
+            "<= "
+        } else {
+            "= "
+        };
+        s += self.right.export_verilog().as_str();
+        s
+    }
+}
 
 impl ExportVerilog for Case {
     fn export_verilog(&self) -> String {
@@ -240,9 +298,16 @@ impl ExportVerilog for Case {
 
         for (name, expr) in &self.items {
             if let Some(name) = name {
-                s.push_str(&format!("    {}: {}\n", name, expr.export_verilog()));
+                s.push_str(&format!(
+                    "    {}: {}\n",
+                    name,
+                    statement_export_verilog(expr)
+                ));
             } else {
-                s.push_str(&format!("    default: {}\n", expr.export_verilog()));
+                s.push_str(&format!(
+                    "    default: {}\n",
+                    statement_export_verilog(expr)
+                ));
             }
         }
 
@@ -263,7 +328,12 @@ mod tests {
         /// Check signed output
         #[test]
         fn test_export_verilog_for_output_signed_width_2() {
-            let testing_inout = Output::new("output_name", Some(NetType::Wire), Some(2), true);
+            let testing_inout = Output::new(
+                "output_name",
+                Some(RegNetType::NetType(NetType::Wire)),
+                Some(2),
+                true,
+            );
             let expected_module_string = "output wire signed [1:0] output_name".to_string();
             assert_eq!(
                 expected_module_string,
@@ -320,7 +390,7 @@ mod tests {
                 &vec![
                     Port::Output(Output::new(
                         "output_name",
-                        Some(NetType::Wire),
+                        Some(RegNetType::NetType(NetType::Wire)),
                         Some(2),
                         true,
                     )),
