@@ -146,14 +146,74 @@
 <a href="#146" id="146">146</a>
 <a href="#147" id="147">147</a>
 <a href="#148" id="148">148</a>
-</pre><pre class="rust"><code><span class="kw">pub trait </span>ExportVerilog {
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+</pre><pre class="rust"><code><span class="doccomment">//! # Представление структур данных
+
+</span><span class="kw">pub trait </span>ExportVerilog {
     <span class="kw">fn </span>export_verilog(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String;
 }
 
 <span class="doccomment">/// net_type ::=
 /// supply0 | supply1 | tri | triand | trior | tri0 | tri1 | wire | wand | wor
 /// Right now support only wire
-</span><span class="attr">#[derive(Clone)]
+</span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>NetType {
     <span class="comment">// Supply0,
     // Supply1,
@@ -167,38 +227,66 @@
     // Wor,
 </span>}
 
-<span class="attr">#[derive(Clone)]
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Statement {
     Wire(Wire),
     Register(Register),
     Assign(Assign),
+    Always(Always),
+    LocalParam(LocalParam),
+    If(If),
+    Case(Case),
+    Assignment(Assignment),
 }
 
-<span class="attr">#[derive(Clone)]
+<span class="kw">pub fn </span>statement_export_verilog(stmt: <span class="kw-2">&amp;</span>Statement) -&gt; String {
+    <span class="kw">match </span>stmt {
+        Statement::Register(reg) =&gt; reg.export_verilog(),
+        Statement::Wire(wire) =&gt; wire.export_verilog(),
+        Statement::Assign(assign) =&gt; assign.export_verilog(),
+        Statement::Always(always) =&gt; always.export_verilog(),
+        Statement::LocalParam(param) =&gt; param.export_verilog(),
+        Statement::If(x) =&gt; x.export_verilog(),
+        Statement::Case(x) =&gt; x.export_verilog(),
+        Statement::Assignment(x) =&gt; x.export_verilog(),
+    }
+}
+
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="doccomment">/// TODO: Заменить строку на ссылку
+/// Разница между Assignment в том, что это чисто под операции, начинающиеся на assign
 </span><span class="kw">pub struct </span>Assign {
     <span class="kw">pub </span>left: String,
     <span class="kw">pub </span>right: Expression,
 }
 
-<span class="attr">#[derive(Clone)]
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>Always {
+    <span class="kw">pub </span>statements: Vec&lt;Statement&gt;,
+}
+
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="doccomment">/// TODO: Заменить строку на ссылку
 </span><span class="kw">pub enum </span>Expression {
     Identifier(String),
     Unary(UnaryOp, Box&lt;Expression&gt;),
     Binary(Box&lt;Expression&gt;, BinaryOp, Box&lt;Expression&gt;),
+    Number(Number),
 }
 
-<span class="attr">#[derive(Clone)]
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>UnaryOp {
     Not,
 }
 
-<span class="attr">#[derive(Clone)]
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>BinaryOp {
     And,
     Or,
+    Eq,
 }
 
-<span class="attr">#[derive(Clone)]
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Port {
     Input(Input),
     Output(Output),
@@ -209,9 +297,22 @@
     <span class="kw">fn </span>what_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String;
 }
 
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>If {
+    <span class="kw">pub </span>condition: Expression,
+    <span class="kw">pub </span>then_statements: Vec&lt;Statement&gt;,
+    <span class="kw">pub </span>else_statements: Vec&lt;Statement&gt;,
+}
+
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>Case {
+    <span class="kw">pub </span>expression: Expression,
+    <span class="kw">pub </span>items: Vec&lt;(<span class="prelude-ty">Option</span>&lt;String&gt;, Statement)&gt;,
+}
+
 <span class="doccomment">/// input_declaration ::=
 /// input ( net_type )? ( signed )? ( range )? list_of_port_identifiers
-</span><span class="attr">#[derive(Clone)]
+</span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Input {
     <span class="kw">pub </span>name: String,
     <span class="kw">pub </span>net_type: <span class="prelude-ty">Option</span>&lt;NetType&gt;,
@@ -221,12 +322,18 @@
 
 <span class="doccomment">/// inout_declaration ::=
 /// inout ( &lt;net_type&gt; )? ( signed )? ( &lt;range&gt; )? &lt;list_of_port_identifiers&gt;
-</span><span class="attr">#[derive(Clone)]
+</span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Inout {
     <span class="kw">pub </span>name: String,
     <span class="kw">pub </span>net_type: <span class="prelude-ty">Option</span>&lt;NetType&gt;,
     <span class="kw">pub </span>width: <span class="prelude-ty">Option</span>&lt;u32&gt;,
     <span class="kw">pub </span>is_signed: bool,
+}
+
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>RegNetType {
+    NetType(NetType),
+    Reg(bool),
 }
 
 <span class="doccomment">/// output_declaration ::=
@@ -239,39 +346,48 @@
 /// output ( output_variable_type )? list_of_port_identifiers
 /// |
 /// output output_variable_type list_of_variable_port_identifiers
-</span><span class="attr">#[derive(Clone)]
+</span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Output {
     <span class="kw">pub </span>name: String,
-    <span class="kw">pub </span>net_type: <span class="prelude-ty">Option</span>&lt;NetType&gt;,
+    <span class="kw">pub </span>reg_net_type: <span class="prelude-ty">Option</span>&lt;RegNetType&gt;,
     <span class="kw">pub </span>width: <span class="prelude-ty">Option</span>&lt;u32&gt;,
     <span class="kw">pub </span>is_signed: bool,
 }
 
-<span class="attr">#[derive(Clone)]
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>OperationType {
+    Sync,  <span class="comment">// &lt;=
+    </span>Async, <span class="comment">// =
+</span>}
+
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Assignment {
     <span class="kw">pub </span>name: String,
+    <span class="kw">pub </span>ass_type: OperationType,
+    <span class="kw">pub </span>right: Expression,
 }
 
-<span class="kw">pub struct </span>Module {
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>Module {
     <span class="kw">pub </span>name: String,
     <span class="kw">pub </span>statements: Vec&lt;Statement&gt;,
     <span class="kw">pub </span>ports: Vec&lt;Port&gt;,
 }
 
-<span class="attr">#[derive(Clone)]
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="doccomment">/// TODO: заменить на NetType. Wire-это частное
 </span><span class="kw">pub struct </span>Wire {
     <span class="kw">pub </span>name: String,
     <span class="kw">pub </span>width: u32,
 }
 
-<span class="attr">#[derive(Clone)]
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Register {
     <span class="kw">pub </span>name: String,
     <span class="kw">pub </span>width: u32,
 }
 
-<span class="attr">#[derive(Clone)]
+<span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>LocalParam {
     <span class="kw">pub </span>name: String,
     <span class="kw">pub </span>value: Number,
@@ -286,7 +402,7 @@
 // | hex_number
 // | real_number real_number
 
-</span><span class="attr">#[derive(Clone)]
+</span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="doccomment">/// TODO: real_number
 </span><span class="kw">pub enum </span>Number {
     Binary(u32, String),
