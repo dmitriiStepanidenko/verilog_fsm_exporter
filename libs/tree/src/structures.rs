@@ -1,5 +1,18 @@
 //! # Представление структур данных
 
+/// # Трейт экспорта в верилог
+/// Требует реализацию функции export_verilog(), возвращающую строку с готовым verilog-кодом.
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```no_run
+/// let module = Module::new("module_name", &Vec::<Statement>::new(), &Vec::<Port>::new());
+///
+/// // some code
+/// let output_string = module.export_verilog();
+/// ```
 pub trait ExportVerilog {
     fn export_verilog(&self) -> String;
 }
@@ -73,6 +86,10 @@ pub enum UnaryOp {
     Not,
 }
 
+/// Бинарные операции:
+/// - And
+/// - Or
+/// - Eq
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BinaryOp {
     And,
@@ -80,6 +97,10 @@ pub enum BinaryOp {
     Eq,
 }
 
+/// Порты. Могут быть:
+/// - Input
+/// - Output
+/// - Inout
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Port {
     Input(Input),
