@@ -1,0 +1,6 @@
+[book]
+authors = ["Dmitrii Stepanidenko"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Tutorial"
