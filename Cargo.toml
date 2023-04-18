@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "app",
+    "libs/tree",
+    "libs/abstract_tree",
+    "libs/verilog_fsm",
+    # other packages
+]
