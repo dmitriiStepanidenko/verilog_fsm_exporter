@@ -14,7 +14,7 @@ let result = FSM_parse(str)?;
 
 ## 2 шаг
 Из внутреннего представления FSM (Finite State Machine) посредством вызова 
-функции ``fsm_to_verilog_module``
+функции ``fsm_to_verilog_module`` получаем внутреннее представление Verilog-модуля
 
 ```rust
 let str: &str;

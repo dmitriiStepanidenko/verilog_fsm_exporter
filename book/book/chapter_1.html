@@ -157,7 +157,7 @@ let result = FSM_parse(str)?;
 <span class="boring">}</span></code></pre></pre>
 <h2 id="2-шаг"><a class="header" href="#2-шаг">2 шаг</a></h2>
 <p>Из внутреннего представления FSM (Finite State Machine) посредством вызова 
-функции <code>fsm_to_verilog_module</code></p>
+функции <code>fsm_to_verilog_module</code> получаем внутреннее представление Verilog-модуля</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let str: &amp;str;
@@ -204,22 +204,6 @@ let resultString = resultModule.export_verilog();
 
         </div>
 
-        <!-- Livereload script (if served using the cli tool) -->
-        <script>
-            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
-            const socket = new WebSocket(wsAddress);
-            socket.onmessage = function (event) {
-                if (event.data === "reload") {
-                    socket.close();
-                    location.reload();
-                }
-            };
-
-            window.onbeforeunload = function() {
-                socket.close();
-            }
-        </script>
 
 
 
