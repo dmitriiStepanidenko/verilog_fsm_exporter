@@ -2,7 +2,6 @@
 members = [
     "app",
     "libs/tree",
-    "libs/abstract_tree",
-    "libs/verilog_fsm",
-    # other packages
+    "libs/fsm_lang",
+    "libs/tree_export_verilog",
 ]
