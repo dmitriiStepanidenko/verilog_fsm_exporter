@@ -1,0 +1,12 @@
+[book]
+title = "FSM lang lib"
+authors = ["Dmitrii Stepanidenko"]
+description = "A Rust library for parsing fsm-files"
+edition = "2021"
+
+[build]
+target-dir = "book"
+
+[[chapter]]
+path = "README.md"
+
