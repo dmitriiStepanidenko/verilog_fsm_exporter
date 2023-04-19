@@ -14,6 +14,7 @@
 /// let output_string = module.export_verilog();
 /// ```
 pub trait ExportVerilog {
+    /// Возвращает готовую строку с кодом на языке Verilog
     fn export_verilog(&self) -> String;
 }
 
@@ -34,6 +35,9 @@ pub enum NetType {
     // Wor,
 }
 
+/// # Statement
+///
+/// Позволяет определять операции
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Statement {
     Wire(Wire),
@@ -134,6 +138,12 @@ pub struct Input {
     pub width: Option<u32>,
     pub is_signed: bool,
 }
+
+// Архитектура
+// Грамматика
+// Выбор парсера
+// Что транслятору можно подать на вход и как он реагирует на ошибки
+//
 
 /// inout_declaration ::=
 /// inout ( <net_type> )? ( signed )? ( <range> )? <list_of_port_identifiers>

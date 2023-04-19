@@ -10,7 +10,9 @@ use nom::{
     sequence::{delimited, pair, preceded, separated_pair, terminated},
     IResult,
 };
-use tree::structures::*;
+
+//use tree::structures::*;
+//
 // ```norust
 // <FSM> ::= {<state_declaration>}+
 // <state_declaration> ::= "state" <state_name> ":" {<input_declaration> | <output_declaration> | <transition_action>}*
@@ -65,7 +67,7 @@ impl ToString for Comparison {
 /// <identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*
 ///
 ///
-fn identifier(input: &str) -> IResult<&str, &str> {
+pub fn identifier(input: &str) -> IResult<&str, &str> {
     recognize(pair(
         nom::character::complete::satisfy(is_alphabetic),
         many0(nom::character::complete::satisfy(|c| {
@@ -79,12 +81,12 @@ fn identifier(input: &str) -> IResult<&str, &str> {
 /// <decimal_value> ::= [0-9]+
 ///
 ///
-fn decimal_value(input: &str) -> IResult<&str, u32> {
+pub fn decimal_value(input: &str) -> IResult<&str, u32> {
     map_res(digit1, |s: &str| s.parse::<u32>())(input)
 }
 
 /// # Ключевые слова
-fn keyword<'a>(kw: &'a str) -> impl Fn(&str) -> IResult<&str, String> + 'a {
+pub fn keyword<'a>(kw: &'a str) -> impl Fn(&str) -> IResult<&str, String> + 'a {
     move |input| {
         let (input, _) = multispace0(input)?;
         let (input, _) = tag(kw)(input)?;
@@ -93,11 +95,11 @@ fn keyword<'a>(kw: &'a str) -> impl Fn(&str) -> IResult<&str, String> + 'a {
     }
 }
 
-fn symbol(input: &str) -> IResult<&str, char> {
-    preceded(multispace0, nom::character::complete::one_of(";,()"))(input)
-}
-
 ////////////////
+
+pub fn FSM_parse(input: &str) -> IResult<&str, Vec<State>> {
+    many1(state)(input)
+}
 
 #[derive(Debug, PartialEq)]
 pub struct Transition<'a> {
@@ -122,7 +124,7 @@ fn action_single(input: &str) -> IResult<&str, (&str, u32)> {
 }
 
 /// <action> ::= "{" <output_name> <assignment_operator> <value> "}"
-fn action(input: &str) -> IResult<&str, Vec<(&str, u32)>> {
+pub fn action(input: &str) -> IResult<&str, Vec<(&str, u32)>> {
     let (input, _) = multispace0(input)?;
 
     let (input, _) = tag("{")(input)?;
@@ -139,7 +141,7 @@ fn action(input: &str) -> IResult<&str, Vec<(&str, u32)>> {
 }
 
 /// <comparison_operator> ::= "==" | "!=" | "<" | "<=" | ">" | ">="
-fn comparison(input: &str) -> IResult<&str, Comparison> {
+pub fn comparison(input: &str) -> IResult<&str, Comparison> {
     alt((
         map(tag("=="), |_| Comparison::EQ),
         map(tag("!="), |_| Comparison::NEQ),
@@ -152,7 +154,7 @@ fn comparison(input: &str) -> IResult<&str, Comparison> {
 
 /// <transition_action> ::= "on" <condition> "->" <state_name> <action> ";"
 /// <condition> ::= <input_name> <comparison_operator> <value>
-fn transition(input: &str) -> IResult<&str, Transition> {
+pub fn transition(input: &str) -> IResult<&str, Transition> {
     let (input, _) = multispace0(input)?;
 
     let (input, _) = tag("on")(input)?;
@@ -189,7 +191,7 @@ fn transition(input: &str) -> IResult<&str, Transition> {
 /// <input_declaration> ::= "input" "(" <bit_width> ")" <input_name> ";"
 /// <input_name> ::= <identifier>
 /// TODO: отрабатывать лучше пробелы
-fn input_declaration(input: &str) -> IResult<&str, (&str, u32)> {
+pub fn input_declaration(input: &str) -> IResult<&str, (&str, u32)> {
     let (input, _) = keyword("input")(input)?;
     let (input, _) = multispace0(input)?;
     let (input, size) = delimited(tag("("), decimal_value, tag(")"))(input)?;
@@ -201,7 +203,7 @@ fn input_declaration(input: &str) -> IResult<&str, (&str, u32)> {
 
 /// <output_declaration> ::= "output" "(" <bit_width> ")" <output_name> ";"
 /// TODO: отрабатывать лучше пробелы
-fn output_declaration(input: &str) -> IResult<&str, (&str, u32)> {
+pub fn output_declaration(input: &str) -> IResult<&str, (&str, u32)> {
     let (input, _) = keyword("output")(input)?;
     let (input, _) = multispace0(input)?;
     let (input, size) = delimited(tag("("), decimal_value, tag(")"))(input)?;
@@ -214,7 +216,7 @@ fn output_declaration(input: &str) -> IResult<&str, (&str, u32)> {
 /// <state_declaration> ::= "state" <state_name> ":" {<input_declaration> | <output_declaration> | <transition_action>}*
 /// <state_name> ::= <identifier>
 /// TODO: отрабатывать лучше пробелы
-fn state(
+pub fn state(
     input: &str,
 ) -> IResult<&str, (&str, Vec<(&str, u32)>, Vec<(&str, u32)>, Vec<Transition>)> {
     let (input, _) = keyword("state")(input)?;
@@ -276,13 +278,6 @@ mod tests {
                 nom::error::ErrorKind::Tag
             )))
         );
-    }
-
-    #[test]
-    fn test_symbol() {
-        assert_eq!(symbol(";"), Ok(("", ';')));
-        assert_eq!(symbol(", "), Ok((" ", ',')));
-        assert_eq!(symbol("()"), Ok((")", '(')));
     }
 
     #[test]
