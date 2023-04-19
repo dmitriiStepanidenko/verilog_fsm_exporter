@@ -1,11 +1,12 @@
 use nom::character::complete::digit1;
 use nom::combinator::map_res;
 use nom::{
+    branch::alt,
     bytes::complete::{tag, take_while},
-    character::complete::multispace0,
+    character::complete::{multispace0, multispace1, space0, space1},
     character::is_alphanumeric,
-    combinator::recognize,
-    multi::{many0, many1},
+    combinator::{map, recognize},
+    multi::{many0, many1, separated_list0, separated_list1},
     sequence::{delimited, pair, preceded, separated_pair, terminated},
     IResult,
 };
@@ -34,6 +35,29 @@ use tree::structures::*;
 // ```
 fn is_alphabetic(c: char) -> bool {
     c.is_ascii_alphabetic()
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Comparison {
+    EQ,
+    NEQ,
+    LE,
+    LEQ,
+    GE,
+    GEQ,
+}
+
+impl ToString for Comparison {
+    fn to_string(&self) -> String {
+        match self {
+            Comparison::EQ => "==".to_string(),
+            Comparison::NEQ => "!=".to_string(),
+            Comparison::LE => "<".to_string(),
+            Comparison::LEQ => "<=".to_string(),
+            Comparison::GE => ">".to_string(),
+            Comparison::GEQ => ">=".to_string(),
+        }
+    }
 }
 
 /// # Нетерминал identifier
@@ -77,70 +101,134 @@ fn symbol(input: &str) -> IResult<&str, char> {
 
 #[derive(Debug, PartialEq)]
 pub struct Transition<'a> {
-    condition: (&'a str, &'a str, u32),
+    condition: (&'a str, Comparison, u32),
     target: &'a str,
     actions: Vec<(&'a str, u32)>,
 }
 
-fn transition(input: &str) -> IResult<&str, Transition> {
-    let (input, source) = identifier(input)?;
-    let (input, _) = tag("==")(input)?;
+///
+fn action_single(input: &str) -> IResult<&str, (&str, u32)> {
+    let (input, _) = multispace0(input)?;
+
+    let (input, output_name) = identifier(input)?;
+    let (input, _) = multispace0(input)?;
+
+    let (input, _) = tag("=")(input)?;
+    let (input, _) = multispace0(input)?;
+
     let (input, value) = decimal_value(input)?;
+
+    Ok((input, (output_name, value)))
+}
+
+/// <action> ::= "{" <output_name> <assignment_operator> <value> "}"
+fn action(input: &str) -> IResult<&str, Vec<(&str, u32)>> {
+    let (input, _) = multispace0(input)?;
+
+    let (input, _) = tag("{")(input)?;
+    let (input, _) = multispace0(input)?;
+
+    let (input, actions) =
+        separated_list0(delimited(multispace0, tag(";"), multispace0), action_single)(input)?;
+    let (input, _) = multispace0(input)?;
+
+    let (input, _) = tag("}")(input)?;
+    let (input, _) = multispace0(input)?;
+
+    Ok((input, actions))
+}
+
+/// <comparison_operator> ::= "==" | "!=" | "<" | "<=" | ">" | ">="
+fn comparison(input: &str) -> IResult<&str, Comparison> {
+    alt((
+        map(tag("=="), |_| Comparison::EQ),
+        map(tag("!="), |_| Comparison::NEQ),
+        map(tag("<="), |_| Comparison::LEQ),
+        map(tag("<"), |_| Comparison::LE),
+        map(tag(">="), |_| Comparison::GEQ),
+        map(tag(">"), |_| Comparison::GE),
+    ))(input)
+}
+
+/// <transition_action> ::= "on" <condition> "->" <state_name> <action> ";"
+/// <condition> ::= <input_name> <comparison_operator> <value>
+fn transition(input: &str) -> IResult<&str, Transition> {
+    let (input, _) = multispace0(input)?;
+
+    let (input, _) = tag("on")(input)?;
+    let (input, _) = multispace0(input)?;
+
+    let (input, source) = identifier(input)?;
+    let (input, _) = multispace0(input)?;
+
+    let (input, comp) = comparison(input)?;
+    let (input, _) = multispace0(input)?;
+
+    let (input, value) = decimal_value(input)?;
+    let (input, _) = multispace0(input)?;
+
     let (input, _) = tag("->")(input)?;
+    let (input, _) = multispace0(input)?;
+
     let (input, target) = identifier(input)?;
-    let (input, actions) = delimited(
-        tag("{"),
-        many1(terminated(
-            separated_pair(identifier, tag("="), decimal_value),
-            tag(";"),
-        )),
-        tag("}"),
-    )(input)?;
+    let (input, _) = multispace0(input)?;
+
+    let (input, actions) = action(input)?;
+    let (input, _) = multispace0(input)?;
 
     Ok((
         input,
         Transition {
-            condition: (source, "==", value),
+            condition: (source, comp, value),
             target,
             actions,
         },
     ))
 }
 
+/// <input_declaration> ::= "input" "(" <bit_width> ")" <input_name> ";"
+/// <input_name> ::= <identifier>
+/// TODO: отрабатывать лучше пробелы
+fn input_declaration(input: &str) -> IResult<&str, (&str, u32)> {
+    let (input, _) = keyword("input")(input)?;
+    let (input, _) = multispace0(input)?;
+    let (input, size) = delimited(tag("("), decimal_value, tag(")"))(input)?;
+    let (input, _) = multispace0(input)?;
+    let (input, name) = identifier(input)?;
+    let (input, _) = multispace0(input)?;
+    Ok((input, (name, size)))
+}
+
+/// <output_declaration> ::= "output" "(" <bit_width> ")" <output_name> ";"
+/// TODO: отрабатывать лучше пробелы
+fn output_declaration(input: &str) -> IResult<&str, (&str, u32)> {
+    let (input, _) = keyword("output")(input)?;
+    let (input, _) = multispace0(input)?;
+    let (input, size) = delimited(tag("("), decimal_value, tag(")"))(input)?;
+    let (input, _) = multispace0(input)?;
+    let (input, name) = identifier(input)?;
+    let (input, _) = multispace0(input)?;
+    Ok((input, (name, size)))
+}
+
 /// <state_declaration> ::= "state" <state_name> ":" {<input_declaration> | <output_declaration> | <transition_action>}*
 /// <state_name> ::= <identifier>
+/// TODO: отрабатывать лучше пробелы
 fn state(
     input: &str,
 ) -> IResult<&str, (&str, Vec<(&str, u32)>, Vec<(&str, u32)>, Vec<Transition>)> {
-    let kw_state = keyword("state");
-    let kw_input = keyword("input");
-    let kw_output = keyword("output");
-    let kw_on = keyword("on");
-
-    let (input, _) = kw_state(input)?;
+    let (input, _) = keyword("state")(input)?;
+    let (input, _) = multispace0(input)?;
     let (input, state_name) = identifier(input)?;
+    let (input, _) = multispace0(input)?;
     let (input, _) = tag(":")(input)?;
-
-    let (input, inputs) = delimited(
-        kw_input,
-        many1(terminated(
-            separated_pair(identifier, tag(","), decimal_value),
-            tag(";"),
-        )),
-        tag(";"),
-    )(input)?;
-
-    let (input, outputs) = delimited(
-        kw_output,
-        many1(terminated(
-            separated_pair(identifier, tag(","), decimal_value),
-            tag(";"),
-        )),
-        tag(";"),
-    )(input)?;
-
-    let (input, transitions) = many0(delimited(kw_on, transition, tag(";")))(input)?;
-
+    let (input, _) = multispace0(input)?;
+    let (input, inputs) = many0(terminated(input_declaration, tag(";")))(input)?;
+    let (input, _) = multispace0(input)?;
+    let (input, outputs) = many0(terminated(output_declaration, tag(";")))(input)?;
+    let (input, _) = multispace0(input)?;
+    let (input, transitions) = many0(terminated(transition, tag(";")))(input)?;
+    let (input, _) = multispace0(input)?;
     Ok((input, (state_name, inputs, outputs, transitions)))
 }
 
@@ -216,12 +304,12 @@ mod tests {
                     vec![("Output1", 1)],
                     vec![
                         Transition {
-                            condition: ("Input1", "==", 1),
+                            condition: ("Input1", Comparison::EQ, 1),
                             target: "StateB",
                             actions: vec![("Output1", 1)],
                         },
                         Transition {
-                            condition: ("Input1", "==", 0),
+                            condition: ("Input1", Comparison::EQ, 0),
                             target: "StateC",
                             actions: vec![("Output1", 0)],
                         }
@@ -229,5 +317,105 @@ mod tests {
                 )
             ))
         );
+    }
+
+    #[test]
+    fn test_input_declaration() {
+        assert_eq!(
+            input_declaration("input(1) Input1"),
+            Ok(("", ("Input1", 1)))
+        );
+        assert_eq!(
+            input_declaration("input(8) Input_8"),
+            Ok(("", ("Input_8", 8)))
+        );
+        assert_eq!(
+            input_declaration("output(1) Output1"),
+            Err(nom::Err::Error(nom::error::make_error(
+                "output(1) Output1",
+                nom::error::ErrorKind::Tag
+            )))
+        );
+    }
+
+    #[test]
+    fn test_output_declaration() {
+        assert_eq!(
+            output_declaration("output(1) Output1"),
+            Ok(("", ("Output1", 1)))
+        );
+        assert_eq!(
+            output_declaration("output(8) Output_8"),
+            Ok(("", ("Output_8", 8)))
+        );
+        assert_eq!(
+            output_declaration("input(1) Input1"),
+            Err(nom::Err::Error(nom::error::make_error(
+                "input(1) Input1",
+                nom::error::ErrorKind::Tag
+            )))
+        );
+    }
+
+    #[test]
+    fn test_transition() {
+        assert_eq!(
+            transition("on Input1 == 1 -> StateB {Output1 = 1}"),
+            Ok((
+                "",
+                Transition {
+                    condition: ("Input1", Comparison::EQ, 1),
+                    target: "StateB",
+                    actions: vec![("Output1", 1)]
+                }
+            ))
+        );
+
+        assert_eq!(
+            transition("on Input2 != 0 -> StateC {Output2 = 0; Output3 = 1}"),
+            Ok((
+                "",
+                Transition {
+                    condition: ("Input2", Comparison::NEQ, 0),
+                    target: "StateC",
+                    actions: vec![("Output2", 0), ("Output3", 1)]
+                }
+            ))
+        );
+
+        assert_eq!(
+            transition("  on  Input1  ==  1  ->  StateB  { Output1  =  1  } "),
+            Ok((
+                "",
+                Transition {
+                    condition: ("Input1", Comparison::EQ, 1),
+                    target: "StateB",
+                    actions: vec![("Output1", 1)]
+                }
+            ))
+        );
+
+        assert_eq!(
+            transition("on Input1 = 1 -> StateB {Output1 = 1}"),
+            Err(nom::Err::Error(nom::error::make_error(
+                "= 1 -> StateB {Output1 = 1}",
+                nom::error::ErrorKind::Tag
+            )))
+        );
+    }
+
+    #[test]
+    fn test_action_single() {
+        assert_eq!(action_single("Output1 = 1"), Ok(("", ("Output1", 1))));
+        assert_eq!(action_single("Output2=0"), Ok(("", ("Output2", 0))));
+    }
+
+    #[test]
+    fn test_action() {
+        assert_eq!(
+            action("{Output1 = 1; Output2 = 0}"),
+            Ok(("", vec![("Output1", 1), ("Output2", 0),]))
+        );
+        assert_eq!(action("{Output1 = 42}"), Ok(("", vec![("Output1", 42)])));
     }
 }

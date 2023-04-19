@@ -9,4 +9,10 @@ edition = "2021"
 nom = "7.1.3"
 tree = { path = "../tree" }
 
+[lib]
+name = "fsm_lang"
+crate-type = ["staticlib", "dylib"]
+
+[lib.target.'cfg(unix)']
+rustflags = ["-C", "link-args=-lfoo -lbar"]
 
