@@ -1,5 +1,6 @@
 # Грамматика FSM_lang
 
+Примерный вариант грамматики:
 ```
 <FSM> ::= {<state_declaration>}+
 <state_declaration> ::= "state" <state_name> ":" {<input_declaration> | <output_declaration> | <transition_action>}*

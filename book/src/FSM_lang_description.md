@@ -38,7 +38,7 @@ output(1) Output1;
 on Input1 == 1 -> StateB {Output1 = 1};
 ```
 
-## Комплексный пример:
+## Пример 
 
 ```
 state StateA:
