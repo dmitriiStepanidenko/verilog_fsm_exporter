@@ -7,9 +7,9 @@
 <state_name> ::= <identifier>
 <input_declaration> ::= "input" "(" <bit_width> ")" <input_name> ";"
 <output_declaration> ::= "output" "(" <bit_width> ")" <output_name> ";"
-<transition_action> ::= "on" <condition> "->" <state_name> <action> ";"
+<transition_action> ::= "on" <condition> "->" <state_name> { <action> } ";"
 <condition> ::= <input_name> <comparison_operator> <value>
-<action> ::= "{" <output_name> <assignment_operator> <value> "}"
+<action> ::= "{" <output_name> <assignment_operator> <value> "}" | 
 
 <identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*
 <input_name> ::= <identifier>

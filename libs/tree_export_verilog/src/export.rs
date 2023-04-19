@@ -1,8 +1,35 @@
-//! # Функции для структрур данных для экспорта
-//!
-//! в будущем отдельный crate
+use tree::structures::*;
+use tree::structures::{Port, Statement};
+/// # Трейт экспорта в верилог
+/// Требует реализацию функции export_verilog(), возвращающую строку с готовым verilog-кодом.
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```no_run
+/// let module = Module::new("module_name", &Vec::<Statement>::new(), &Vec::<Port>::new());
+///
+/// // some code
+/// let output_string = module.export_verilog();
+/// ```
+pub trait ExportVerilog {
+    /// Возвращает готовую строку с кодом на языке Verilog
+    fn export_verilog(&self) -> String;
+}
 
-use crate::structures::*;
+pub fn statement_export_verilog(stmt: &Statement) -> String {
+    match stmt {
+        Statement::Register(reg) => reg.export_verilog(),
+        Statement::Wire(wire) => wire.export_verilog(),
+        Statement::Assign(assign) => assign.export_verilog(),
+        Statement::Always(always) => always.export_verilog(),
+        Statement::LocalParam(param) => param.export_verilog(),
+        Statement::If(x) => x.export_verilog(),
+        Statement::Case(x) => x.export_verilog(),
+        Statement::Assignment(x) => x.export_verilog(),
+    }
+}
 
 impl ExportVerilog for Module {
     fn export_verilog(&self) -> String {

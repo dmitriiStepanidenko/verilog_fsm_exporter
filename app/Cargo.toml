@@ -5,4 +5,6 @@ edition = "2021"
 
 [dependencies]
 tree = { path = "../libs/tree" }
+fsm_lang = { path = "../libs/fsm_lang" }
+tree_export_verilog = { path = "../libs/tree_export_verilog" }
 

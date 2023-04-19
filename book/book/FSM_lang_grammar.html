@@ -151,9 +151,9 @@
 &lt;state_name&gt; ::= &lt;identifier&gt;
 &lt;input_declaration&gt; ::= &quot;input&quot; &quot;(&quot; &lt;bit_width&gt; &quot;)&quot; &lt;input_name&gt; &quot;;&quot;
 &lt;output_declaration&gt; ::= &quot;output&quot; &quot;(&quot; &lt;bit_width&gt; &quot;)&quot; &lt;output_name&gt; &quot;;&quot;
-&lt;transition_action&gt; ::= &quot;on&quot; &lt;condition&gt; &quot;-&gt;&quot; &lt;state_name&gt; &lt;action&gt; &quot;;&quot;
+&lt;transition_action&gt; ::= &quot;on&quot; &lt;condition&gt; &quot;-&gt;&quot; &lt;state_name&gt; { &lt;action&gt; } &quot;;&quot;
 &lt;condition&gt; ::= &lt;input_name&gt; &lt;comparison_operator&gt; &lt;value&gt;
-&lt;action&gt; ::= &quot;{&quot; &lt;output_name&gt; &lt;assignment_operator&gt; &lt;value&gt; &quot;}&quot;
+&lt;action&gt; ::= &quot;{&quot; &lt;output_name&gt; &lt;assignment_operator&gt; &lt;value&gt; &quot;}&quot; | 
 
 &lt;identifier&gt; ::= [a-zA-Z_][a-zA-Z0-9_]*
 &lt;input_name&gt; ::= &lt;identifier&gt;
