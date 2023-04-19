@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Описание FSM_lang - Tutorial</title>
+        <title>Тестирование - Tutorial</title>
 
 
         <!-- Custom HTML head -->
@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Введение</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">2.</strong> Архитектура</a></li><li class="chapter-item expanded "><a href="FSM_lang.html"><strong aria-hidden="true">3.</strong> FSM_lang</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="FSM_lang_description.html" class="active"><strong aria-hidden="true">3.1.</strong> Описание FSM_lang</a></li><li class="chapter-item expanded "><a href="FSM_lang_grammar.html"><strong aria-hidden="true">3.2.</strong> Грамматика FSM_lang</a></li></ol></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">4.</strong> Тестирование</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Введение</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">2.</strong> Архитектура</a></li><li class="chapter-item expanded "><a href="FSM_lang.html"><strong aria-hidden="true">3.</strong> FSM_lang</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="FSM_lang_description.html"><strong aria-hidden="true">3.1.</strong> Описание FSM_lang</a></li><li class="chapter-item expanded "><a href="FSM_lang_grammar.html"><strong aria-hidden="true">3.2.</strong> Грамматика FSM_lang</a></li></ol></li><li class="chapter-item expanded "><a href="testing.html" class="active"><strong aria-hidden="true">4.</strong> Тестирование</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -144,65 +144,38 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="Описание-языка"><a class="header" href="#Описание-языка">Описание языка</a></h1>
-<p>Язык описывает FSM ( Finite State Machine ) с добавленными конструкциями, благодаря чему может 
-компилироваться в конечном счете в Verilog </p>
-<p>Три главных конструкции в fsm_lang</p>
+                        <h1 id="Тестирование"><a class="header" href="#Тестирование">Тестирование</a></h1>
+<p>Почти все функции, связанные с построением внутренних представлений покрыты тестами в нижней части соответствующего файла</p>
+<p>Тесты в библиотеке написаны для проверки корректности работы основных функций парсера и других компонентов. 
+Они проверяют различные аспекты работы библиотеки, такие как:</p>
 <ul>
-<li><strong>Состояния</strong> (States)</li>
-<li><strong>Входы и выходы</strong> (Inputs and Outputs)</li>
-<li><strong>Переходы и действия</strong> (Transitions and Actions)</li>
+<li>Синтаксический анализ идентификаторов, числовых значений и ключевых слов.</li>
+<li>Распознавание и обработка различных операторов и синтаксических конструкций.</li>
+<li>Обработка ошибок и вывод информативных сообщений об ошибках.</li>
+<li>Генерация ожидаемых результатов на основе разнообразных входных данных.</li>
 </ul>
-<h2 id="Описание-элементов-языка"><a class="header" href="#Описание-элементов-языка">Описание элементов языка:</a></h2>
-<h3 id="Состояния-states"><a class="header" href="#Состояния-states">Состояния (States)</a></h3>
-<p>Состояния: Состояние определяется ключевым словом state, за которым следует уникальное имя состояния и двоеточие.</p>
-<p>Пример:</p>
-<pre><code>state StateA:
-state StateB:
-</code></pre>
-<h3 id="Входы-и-выходы-inputs-and-outputs"><a class="header" href="#Входы-и-выходы-inputs-and-outputs">Входы и выходы (Inputs and Outputs)</a></h3>
-<p>Входы и выходы: Входы и выходы определяются ключевыми словами input и output, за которыми следует уникальное имя входа или выхода и количество бит, заключенное в круглые скобки.</p>
-<p>Пример:</p>
-<pre><code>input(1) Input1;
-output(1) Output1;
-</code></pre>
-<h3 id="Переходы-и-действия-transitions-and-actions"><a class="header" href="#Переходы-и-действия-transitions-and-actions">Переходы и действия (Transitions and Actions)</a></h3>
-<p>Переходы и действия: Переходы и действия определяются внутри блока состояния. Каждый переход начинается с ключевого слова on, за которым следует условие перехода, стрелка &quot;-&gt;&quot;, имя целевого состояния и действие при переходе в фигурных скобках.</p>
-<p>Пример:</p>
-<pre><code>on Input1 == 1 -&gt; StateB {Output1 = 1};
-</code></pre>
-<h2 id="Пример"><a class="header" href="#Пример">Пример</a></h2>
-<pre><code>state StateA:
-  input(1) Input1;
-  output(1) Output1;
-  
-  on Input1 == 1 -&gt; StateB {Output1 = 1};
-  on Input1 == 0 -&gt; StateC {Output1 = 0};
-
-state StateB:
-  input(2) Input2;
-  output(2) Output2;
-
-  on Input2 == 2'b10 -&gt; StateC {Output2 = 2'b01};
-
-state StateC:
-  input(2) Input2;
-  output(2) Output2;
-
-  on Input2 == 2'b01 -&gt; StateA {Output2 = 2'b10};
-</code></pre>
+<p>Тесты разделены на модули, каждый из которых охватывает определенный аспект работы библиотеки.
+Вы можете найти тесты в файлах с исходным кодом библиотеки в блоках #[cfg(test)] mod tests.
+В этих модулях представлены функции тестирования с атрибутом #[test], которые вызывают различные
+функции библиотеки с разными входными данными и проверяют корректность результатов с помощью макросов assert_eq!, assert_ne! и других.</p>
+<h2 id="Запуск"><a class="header" href="#Запуск">Запуск</a></h2>
+<p>Тесты для каждой библиотеки можно запустить отдельно, перейдя в каталог соответствующей библиотеки и введя команду <code>cargo test</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>cd libs/tree
+cargo test
+cd ../libs/fsm_lang
+cargo test
+<span class="boring">}</span></code></pre></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="FSM_lang.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="FSM_lang_grammar.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next" href="FSM_lang_grammar.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -210,13 +183,10 @@ state StateC:
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="FSM_lang.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="FSM_lang_grammar.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next" href="FSM_lang_grammar.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>

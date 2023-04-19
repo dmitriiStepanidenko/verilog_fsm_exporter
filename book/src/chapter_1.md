@@ -21,6 +21,7 @@ let str: &str;
 let resultFSM = FSM_parse(str)?;
 let resultModule = fsm_to_verilog_module(resultFSM)?; 
 ```
+
 ## 3 шаг
 Из внутреннего представления Verilog-модуля, получаем конечную строку с 
 Verilog-кодом.

@@ -84,7 +84,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Введение</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">2.</strong> Архитектура</a></li><li class="chapter-item expanded "><a href="FSM_lang.html"><strong aria-hidden="true">3.</strong> FSM_lang</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="FSM_lang_description.html"><strong aria-hidden="true">3.1.</strong> Описание FSM_lang</a></li><li class="chapter-item expanded "><a href="FSM_lang_grammar.html"><strong aria-hidden="true">3.2.</strong> Грамматика FSM_lang</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Введение</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">2.</strong> Архитектура</a></li><li class="chapter-item expanded "><a href="FSM_lang.html"><strong aria-hidden="true">3.</strong> FSM_lang</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="FSM_lang_description.html"><strong aria-hidden="true">3.1.</strong> Описание FSM_lang</a></li><li class="chapter-item expanded "><a href="FSM_lang_grammar.html"><strong aria-hidden="true">3.2.</strong> Грамматика FSM_lang</a></li></ol></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">4.</strong> Тестирование</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -376,6 +376,29 @@ state StateC:
 &lt;binary_value&gt; ::= [0-1]+ &quot;b&quot;[0-1]+
 &lt;decimal_value&gt; ::= [0-9]+
 </code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="Тестирование"><a class="header" href="#Тестирование">Тестирование</a></h1>
+<p>Почти все функции, связанные с построением внутренних представлений покрыты тестами в нижней части соответствующего файла</p>
+<p>Тесты в библиотеке написаны для проверки корректности работы основных функций парсера и других компонентов. 
+Они проверяют различные аспекты работы библиотеки, такие как:</p>
+<ul>
+<li>Синтаксический анализ идентификаторов, числовых значений и ключевых слов.</li>
+<li>Распознавание и обработка различных операторов и синтаксических конструкций.</li>
+<li>Обработка ошибок и вывод информативных сообщений об ошибках.</li>
+<li>Генерация ожидаемых результатов на основе разнообразных входных данных.</li>
+</ul>
+<p>Тесты разделены на модули, каждый из которых охватывает определенный аспект работы библиотеки.
+Вы можете найти тесты в файлах с исходным кодом библиотеки в блоках #[cfg(test)] mod tests.
+В этих модулях представлены функции тестирования с атрибутом #[test], которые вызывают различные
+функции библиотеки с разными входными данными и проверяют корректность результатов с помощью макросов assert_eq!, assert_ne! и других.</p>
+<h2 id="Запуск"><a class="header" href="#Запуск">Запуск</a></h2>
+<p>Тесты для каждой библиотеки можно запустить отдельно, перейдя в каталог соответствующей библиотеки и введя команду <code>cargo test</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>cd libs/tree
+cargo test
+cd ../libs/fsm_lang
+cargo test
+<span class="boring">}</span></code></pre></pre>
 
                     </main>
 
@@ -394,6 +417,22 @@ state StateC:
 
         </div>
 
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
 
 
 
